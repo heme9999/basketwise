@@ -1,6 +1,6 @@
 # Basketwise
 
-Static English-language starter for a U.S. household savings publication. Open `index.html` locally or serve this directory with any static host. Deploy the directory itself to Cloudflare Pages.
+Static English-language U.S. grocery savings site with a device-local grocery budget planner, unit-price comparator, and promotion calculator. Run `sh build.sh` and deploy only `dist/` with the included Wrangler configuration.
 
 Current pages are evergreen education, not live retailer deals. No affiliate links, advertisements, user tracking, or unverified current prices are included. Before publishing live deals, add a source URL, store/ZIP, observed date, expiry, eligibility, checkout total, and editorial review.
 
