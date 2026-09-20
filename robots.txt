@@ -1,2 +1,3 @@
 User-agent: *
 Allow: /
+Sitemap: https://basketwise.overjoyed-week-dcb.workers.dev/sitemap.xml
