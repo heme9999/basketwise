@@ -48,14 +48,30 @@ if (rowsHost) {
   renderRows();
   budgetInput.addEventListener('input', updatePlanner);
   document.getElementById('add-item').addEventListener('click', () => { planner.rows.push({ name: '', qty: 1, price: '' }); renderRows(); rowsHost.lastElementChild.querySelector('input').focus(); });
-  document.getElementById('clear-list').addEventListener('click', () => { planner.rows = [{ name: '', qty: 1, price: '' }]; renderRows(); });
+  const undoButton = document.getElementById('undo-list');
+  let clearedRows = null;
+  document.getElementById('clear-list').addEventListener('click', () => {
+    if (!planner.rows.some(row => row.name || Number(row.price) > 0)) return;
+    clearedRows = planner.rows.map(row => ({ ...row }));
+    planner.rows = [{ name: '', qty: 1, price: '' }];
+    renderRows();
+    undoButton.hidden = false;
+    undoButton.focus();
+  });
+  undoButton.addEventListener('click', () => {
+    if (!clearedRows) return;
+    planner.rows = clearedRows;
+    clearedRows = null;
+    undoButton.hidden = true;
+    renderRows();
+  });
   document.getElementById('print-list').addEventListener('click', () => window.print());
 }
 const unitFields = ['a-price', 'a-size', 'a-unit', 'b-price', 'b-size', 'b-unit'].map(id => document.getElementById(id));
 function compareUnits() {
   const [aPrice, aSize, aUnit, bPrice, bSize, bUnit] = unitFields.map(field => field.tagName === 'SELECT' ? field.value : Number(field.value));
   const message = document.getElementById('compare-verdict');
-  if (!(aPrice > 0 && bPrice > 0 && aSize > 0 && bSize > 0)) { message.textContent = 'Enter prices and package sizes greater than zero.'; return; }
+  if (!(aPrice > 0 && bPrice > 0 && aSize > 0 && bSize > 0)) { document.getElementById('a-result').textContent = '—'; document.getElementById('b-result').textContent = '—'; message.textContent = 'Enter prices and package sizes greater than zero.'; return; }
   const mass = unit => unit === 'oz' || unit === 'lb';
   if (aUnit !== bUnit && !(mass(aUnit) && mass(bUnit))) { document.getElementById('a-result').textContent = '—'; document.getElementById('b-result').textContent = '—'; message.textContent = 'Choose matching units, or compare ounces with pounds.'; return; }
   const unit = mass(aUnit) ? 'oz' : aUnit === 'fl-oz' ? 'fl oz' : 'item';
@@ -76,7 +92,7 @@ const promoFields = ['price', 'quantity', 'discount', 'needed'].map(id => docume
 function calculatePromotion() {
   const [price, quantity, discount, needed] = promoFields.map(field => Number(field.value));
   const verdict = document.getElementById('verdict');
-  if (!(price > 0 && Number.isInteger(quantity) && quantity >= 2 && discount >= 0 && discount < price * quantity && Number.isInteger(needed) && needed >= 1)) { verdict.textContent = 'Enter a valid price, required quantity, discount, and number of items needed.'; return; }
+  if (!(price > 0 && Number.isInteger(quantity) && quantity >= 2 && discount >= 0 && discount < price * quantity && Number.isInteger(needed) && needed >= 1)) { ['promo-total', 'needed-total', 'extra-total'].forEach(id => document.getElementById(id).textContent = '—'); verdict.textContent = 'Enter a valid price, required quantity, discount, and number of items needed.'; return; }
   const checkoutQty = Math.max(quantity, needed), promo = price * checkoutQty - discount, baseline = price * needed, extra = promo - baseline;
   document.getElementById('promo-total').textContent = money(promo);
   document.getElementById('needed-total').textContent = money(baseline);
